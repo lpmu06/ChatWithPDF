@@ -1,3 +1,7 @@
+Neste projeto, utilizo Streamlit, Langchain e Openai para desenvolver uma api que irá receber PDF's como input e rodar LLM's alimentadas por estes PDF's, a partir disso conseguimos generalizar o agente inteligente conforme a necessidade.
+
+
+Fonte:
 https://www.youtube.com/watch?v=RIWbalZ7sTo&ab_channel=PromptEngineering
 https://pastebin.com/mcHG4cY4
 
