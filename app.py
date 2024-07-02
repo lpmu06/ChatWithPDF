@@ -6,11 +6,10 @@ from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.llms import OpenAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks import get_openai_callback
+from langchain.chat_models import ChatOpenAI
 import os 
-
 
 # Sidebar contents
 with st.sidebar:
@@ -27,14 +26,11 @@ with st.sidebar:
     #st.write('Made with ❤️ by Lpzinho do amor')
     st.write('Made by **LP**')
 
-
 def main():
-
     load_dotenv() 
 
-    #Upload a PDF file
+    # Upload a PDF file
     pdf = st.file_uploader("Upload your PDF", type='pdf')
-    # st.write(pdf)
     
     if pdf is not None:
         pdf_reader = PdfReader(pdf)
@@ -49,39 +45,31 @@ def main():
             length_function=len
         )
         chunks = text_splitter.split_text(text=text)
-        #st.write(chunks)
         
-        #embeddings
+        # Embeddings
         store_name = pdf.name[:-4]
 
         if os.path.exists(f"{store_name}.pkl"):
-            with open(f"{store_name}.pkl","rb") as f:
+            with open(f"{store_name}.pkl", "rb") as f:
                 VectorStore = pickle.load(f)
-            #st.write("Embeddings Loeaded from the Disk")
         else:
             embeddings = OpenAIEmbeddings()
             VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
             with open(f"{store_name}.pkl", "wb") as f:
                 pickle.dump(VectorStore, f)
-            #st.write("Embeddings Computation Completed")
 
-        #Accept user questions/query
+        # Accept user questions/query
         query = st.text_input("Ask questions about your PDF file:")
-        #st.write(query)
 
         if query:
             docs = VectorStore.similarity_search(query=query, k=3)
-            #st.write(docs)
-            llm = OpenAI(temperature=0.7, model_name= "gpt-3.5-turbo")
+            #llm = ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo")
+            llm = ChatOpenAI(temperature=0.7, model_name="gpt-4o")
             chain = load_qa_chain(llm=llm, chain_type="stuff")
             with get_openai_callback() as cb:
-                response =chain.run(input_documents=docs, question=query)
+                response = chain.run(input_documents=docs, question=query)
                 print(cb)
-            st.write(response) 
-
-
-
-        #st.write(text)
+            st.write(response)
 
 if __name__ == '__main__':
     main()
